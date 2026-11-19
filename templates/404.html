@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Page not found — To My Love{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="container narrow">
+    <div class="empty-state empty-state--page">
+      <div class="empty-envelope" aria-hidden="true">
+        <span class="ee-body"></span>
+        <span class="ee-letter">♥</span>
+        <span class="ee-flap"></span>
+      </div>
+      <p class="eyebrow eyebrow--center">404</p>
+      <h1>This page got lost on the way to you</h1>
+      <p>The link may be broken, or the letter may have been moved. Love, unlike links, is a little more permanent.</p>
+      <div class="empty-actions">
+        <a href="{% url 'letters:home' %}" class="btn btn--primary">Back home</a>
+        <a href="{% url 'letters:explore' %}" class="btn btn--soft">Read letters of love</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

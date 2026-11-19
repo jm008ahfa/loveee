@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% load static humanize %}
+
+{% block title %}To My Love — Send someone a little piece of your heart{% endblock %}
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <canvas class="hero-hearts" id="heroHearts" aria-hidden="true"></canvas>
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal"><span class="eyebrow-dot"></span> A little digital gift, made by hand</p>
+      <h1 class="hero-title reveal">
+        Send Someone a<br>
+        Little Piece of<br>
+        <span class="script-em">Your Heart.</span>
+      </h1>
+      <p class="hero-sub reveal">
+        Create a beautiful love letter that your special someone can open
+        anytime, anywhere — with your words, your photos, and a song that feels like you two.
+      </p>
+      <div class="hero-actions reveal">
+        {% if user.is_authenticated %}
+          <a href="{% url 'letters:editor_create' %}" class="btn btn--primary btn--lg">
+            Write a new letter
+            <span class="btn__icon" aria-hidden="true">→</span>
+          </a>
+        {% else %}
+          <a href="{% url 'letters:signup' %}" class="btn btn--primary btn--lg">
+            Create Your Love Letter
+            <span class="btn__icon" aria-hidden="true">→</span>
+          </a>
+        {% endif %}
+        <a href="{% url 'letters:explore' %}" class="btn btn--ghost btn--lg">Read letters of love</a>
+      </div>
+      <ul class="hero-trust reveal">
+        <li><span aria-hidden="true">♥</span> Free to create</li>
+        <li><span aria-hidden="true">✦</span> Private by default</li>
+        <li><span aria-hidden="true">✉</span> Nothing to download</li>
+      </ul>
+      {% if stats.letters or stats.views %}
+      <p class="hero-stats reveal">
+        <strong>{{ stats.letters|intcomma }}</strong> letter{{ stats.letters|pluralize }} shared
+        <span class="dot-sep">·</span>
+        <strong>{{ stats.views|intcomma }}</strong> times opened with love
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="hero-art reveal" aria-hidden="true">
+      <div class="art-halo"></div>
+      <div class="art-spark art-spark--1">✦</div>
+      <div class="art-spark art-spark--2">✦</div>
+      <div class="art-spark art-spark--3">✧</div>
+
+      <div class="hero-envelope">
+        <div class="he-back"></div>
+        <div class="he-letter">
+          <span class="he-script">For you, always</span>
+          <span class="he-line he-line--long"></span>
+          <span class="he-line"></span>
+          <span class="he-line he-line--short"></span>
+          <span class="he-sign">with love, me</span>
+        </div>
+        <div class="he-front"></div>
+        <div class="he-flap"></div>
+        <div class="he-seal">♥</div>
+      </div>
+
+      <div class="art-note art-note--top">
+        <span class="art-note__heart">♥</span>
+        <span>You have received<br><em>a special letter</em></span>
+      </div>
+      <div class="art-note art-note--bottom">
+        <span class="art-note__tiny">our song</span>
+        <span class="mini-eq"><i></i><i></i><i></i><i></i></span>
+      </div>
+      <span class="art-caption">Sealed with a little bit of magic</span>
+    </div>
+  </div>
+
+  <div class="hero-fade" aria-hidden="true"></div>
+</section>
+
+<section class="marquee-band" aria-hidden="true">
+  <div class="marquee">
+    <div class="marquee__track">
+      <span>love letters</span><i>♥</i><span>our song</span><i>♥</i><span>first dates</span><i>♥</i><span>forever</span><i>♥</i><span>anniversaries</span><i>♥</i><span>you &amp; me</span><i>♥</i>
+      <span>love letters</span><i>♥</i><span>our song</span><i>♥</i><span>first dates</span><i>♥</i><span>forever</span><i>♥</i><span>anniversaries</span><i>♥</i><span>you &amp; me</span><i>♥</i>
+    </div>
+  </div>
+</section>
+
+<section class="section section--steps" id="how">
+  <div class="container">
+    <header class="section-head">
+      <p class="eyebrow eyebrow--center reveal">Three little steps</p>
+      <h2 class="section-title reveal">From your heart to their screen</h2>
+      <p class="section-sub reveal">No design skills, no app. Just the words you have been meaning to say.</p>
+    </header>
+    <div class="steps-grid">
+      <article class="step-card reveal">
+        <span class="step-number">01</span>
+        <div class="step-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 20l10.5-10.5"/><path d="M14.5 4.5l5 5"/><path d="M13 21l8-8-2-2-8 8-2 5 4-3z"/></svg>
+        </div>
+        <h3>Write the words</h3>
+        <p>Tell them what they mean to you. Add their name, yours, and the little details only you two would know.</p>
+      </article>
+      <article class="step-card reveal">
+        <span class="step-number">02</span>
+        <div class="step-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 15l-5-5-7 7"/></svg>
+        </div>
+        <h3>Make it feel like you</h3>
+        <p>Choose a mood, add your photos, pick a song, and seal it with a password if it is just for them.</p>
+      </article>
+      <article class="step-card reveal">
+        <span class="step-number">03</span>
+        <div class="step-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M21 3L10 14"/><path d="M21 3l-7 18-4-7-7-4 18-7z"/></svg>
+        </div>
+        <h3>Send the link</h3>
+        <p>Share one private link through Messenger, Instagram, or a text. They open an envelope made just for them.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section--features">
+  <div class="container features-grid">
+    <div class="features-copy">
+      <p class="eyebrow reveal">More than a message</p>
+      <h2 class="section-title reveal">A letter that feels like a gift</h2>
+      <p class="section-sub reveal">
+        Every detail is designed to make the moment of opening feel special —
+        the sealed envelope, the falling petals, the song, the photos you almost forgot you had.
+      </p>
+      <ul class="feature-list">
+        <li class="reveal"><span class="feature-dot">♥</span><div><strong>An envelope that really opens</strong><p>Wax seal, sliding paper, floating hearts — a small ceremony before the words.</p></div></li>
+        <li class="reveal"><span class="feature-dot">✦</span><div><strong>Handwriting, serif, or script</strong><p>Choose the typography that feels like your hand writing it.</p></div></li>
+        <li class="reveal"><span class="feature-dot">♪</span><div><strong>A song to remember it by</strong><p>Pick from our library, link a track, or upload your own.</p></div></li>
+        <li class="reveal"><span class="feature-dot">🔒</span><div><strong>Private by default</strong><p>Unlisted links, optional passwords, and no ads — ever.</p></div></li>
+      </ul>
+    </div>
+    <div class="features-visual reveal">
+      <div class="letter-preview-card">
+        <div class="lpc-top">
+          <span class="lpc-date">FEBRUARY 14</span>
+          <span class="lpc-badge">For Amara</span>
+        </div>
+        <p class="lpc-script">My dearest Amara,</p>
+        <p class="lpc-body">There is a version of every ordinary day that is better simply because you are in it.</p>
+        <div class="lpc-photo-strip">
+          {% if featured and featured.0.first_photo %}
+            <img src="{{ featured.0.first_photo.image.url }}" alt="" loading="lazy">
+          {% else %}
+            <span class="lpc-photo lpc-photo--1"></span>
+          {% endif %}
+          <span class="lpc-photo lpc-photo--2"></span>
+          <span class="lpc-photo lpc-photo--3"></span>
+        </div>
+        <p class="lpc-sign">with all my love,<br><span>Noah</span></p>
+        <div class="lpc-player"><span class="mini-eq"><i></i><i></i><i></i><i></i></span> our quiet song</div>
+      </div>
+      <div class="float-chip float-chip--theme">8 romantic themes</div>
+      <div class="float-chip float-chip--qr">QR to share</div>
+    </div>
+  </div>
+</section>
+
+{% if themes %}
+<section class="section section--themes">
+  <div class="container">
+    <header class="section-head section-head--split">
+      <div>
+        <p class="eyebrow reveal">Choose a mood</p>
+        <h2 class="section-title reveal">Every love has a colour</h2>
+      </div>
+      <p class="section-sub reveal">Blush and gold. Midnight stars. Sunlit cream. Pick the one that feels like them.</p>
+    </header>
+    <div class="theme-strip">
+      {% for theme in themes %}
+      <article class="theme-tile reveal" style="--t-primary:{{ theme.primary_color }};--t-secondary:{{ theme.secondary_color }};--t-accent:{{ theme.accent_color }};--t-paper:{{ theme.paper_color }};--t-bg:{{ theme.background_css }};">
+        <div class="theme-tile__preview">
+          <span class="tt-script">For you</span>
+          <span class="tt-line"></span>
+          <span class="tt-line tt-line--short"></span>
+          <span class="tt-heart">♥</span>
+        </div>
+        <div class="theme-tile__meta">
+          <h3>{{ theme.name }}</h3>
+          <p>{{ theme.tagline }}</p>
+          <div class="theme-swatches"><i style="background:{{ theme.primary_color }}"></i><i style="background:{{ theme.secondary_color }}"></i><i style="background:{{ theme.accent_color }}"></i></div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    <p class="center-link reveal"><a href="{% url 'letters:signup' %}" class="text-link">Make one with your favourite →</a></p>
+  </div>
+</section>
+{% endif %}
+
+{% if featured %}
+<section class="section section--featured">
+  <div class="container">
+    <header class="section-head section-head--split">
+      <div>
+        <p class="eyebrow reveal">Shared with permission</p>
+        <h2 class="section-title reveal">Letters of love</h2>
+      </div>
+      <a href="{% url 'letters:explore' %}" class="text-link reveal">See all letters →</a>
+    </header>
+    <div class="featured-grid">
+      {% for letter in featured %}
+      <a class="letter-tile reveal" href="{% url 'letters:letter' letter.slug %}" target="_blank" rel="noopener"
+         style="--t-primary:{{ letter.theme.primary_color|default:'#e46b8f' }};--t-secondary:{{ letter.theme.secondary_color|default:'#9b6bd6' }};--t-accent:{{ letter.theme.accent_color|default:'#d94f79' }};">
+        <div class="letter-tile__media {% if not letter.first_photo %}letter-tile__media--fallback{% endif %}">
+          {% if letter.first_photo %}
+            <img src="{{ letter.first_photo.image.url }}" alt="A photo from {{ letter.title }}" loading="lazy">
+          {% else %}
+            <span class="tile-heart">♥</span>
+          {% endif %}
+          <span class="letter-tile__occasion">{{ letter.occasion_emoji }} {{ letter.get_occasion_display }}</span>
+        </div>
+        <div class="letter-tile__body">
+          <p class="letter-tile__for">For {{ letter.recipient_name }}</p>
+          <h3>{{ letter.title }}</h3>
+          <p class="letter-tile__excerpt">{{ letter.message|truncatechars:92 }}</p>
+          <span class="letter-tile__cta">Open the letter <span aria-hidden="true">→</span></span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<section class="section section--quote">
+  <div class="container quote-wrap reveal">
+    <span class="quote-mark" aria-hidden="true">“</span>
+    <blockquote>
+      Some people are made of poetry.<br>
+      You are the whole book, <em>dog-eared and beloved.</em>
+    </blockquote>
+    <p class="quote-note">For the person you thought of just now.</p>
+  </div>
+</section>
+
+<section class="section section--cta">
+  <div class="container">
+    <div class="cta-panel reveal">
+      <span class="cta-spark cta-spark--1" aria-hidden="true">✦</span>
+      <span class="cta-spark cta-spark--2" aria-hidden="true">✧</span>
+      <span class="cta-heart" aria-hidden="true">♥</span>
+      <p class="eyebrow eyebrow--center">Ready when you are</p>
+      <h2>Someone is waiting to feel<br><span class="script-em">this loved.</span></h2>
+      <p>It takes a few minutes to make. It might stay with them for years.</p>
+      <a href="{% if user.is_authenticated %}{% url 'letters:editor_create' %}{% else %}{% url 'letters:signup' %}{% endif %}" class="btn btn--primary btn--lg">
+        Create your love letter <span class="btn__icon" aria-hidden="true">→</span>
+      </a>
+      <p class="cta-fine">Free · Private · Shareable in one tap</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

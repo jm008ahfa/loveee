@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}{% if letter %}Editing “{{ letter.title }}”{% else %}Create a love letter{% endif %} — To My Love{% endblock %}
+{% block body_class %}page-editor{% endblock %}
+
+{% block content %}
+<section class="editor-head">
+  <div class="container editor-head__inner">
+    <div class="editor-head__left">
+      <a href="{% url 'letters:dashboard' %}" class="back-link">← Your letters</a>
+      <div>
+        <p class="eyebrow">{% if letter %}Editing your letter{% else %}A new love letter{% endif %}</p>
+        <h1>{% if letter %}{{ letter.title }}{% else %}Let's make something they'll keep{% endif %}</h1>
+      </div>
+    </div>
+    <div class="editor-head__right">
+      {% if letter %}
+        {% if letter.status == 'published' %}
+          <span class="pill pill--live"><i></i> Published</span>
+        {% else %}
+          <span class="pill pill--draft"><i></i> Draft saved</span>
+        {% endif %}
+        <span class="editor-saved" data-save-state>Saved {{ letter.updated_at|naturaltime }}</span>
+      {% else %}
+        <span class="editor-saved">Nothing is saved until you press Save</span>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if just_published and letter %}
+<div class="container">
+  <div class="publish-banner">
+    <span class="publish-banner__heart" aria-hidden="true">♥</span>
+    <div>
+      <h2>Your letter is out in the world.</h2>
+      <p>One link, one person, one very good surprise. Send it however feels right.</p>
+    </div>
+    <div class="publish-banner__actions">
+      <div class="copy-field">
+        <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ letter.get_absolute_url }}" data-share-input aria-label="Your letter's share link">
+        <button type="button" class="btn btn--primary btn--sm" data-copy-target="[data-share-input]">Copy link</button>
+      </div>
+      <a href="{% url 'letters:letter' letter.slug %}" target="_blank" rel="noopener" class="btn btn--ghost btn--sm">Open letter ↗</a>
+      <button type="button" class="btn btn--soft btn--sm" data-qr="{{ letter.slug }}" data-qr-url="{% url 'letters:qr' letter.slug %}" data-qr-title="{{ letter.title }}">QR code</button>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="container">
+  {% if form.errors %}
+    <div class="form-alert form-alert--editor" role="alert">
+      <strong>Almost there — a few things need your attention.</strong>
+      <ul>
+        {% for field in form %}{% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}{% endfor %}
+        {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+</div>
+
+<form method="post" enctype="multipart/form-data" class="editor-form" id="letterForm" novalidate
+      data-preview-url="{% if letter %}{% url 'letters:preview' letter.slug %}{% endif %}">
+  {% csrf_token %}
+
+  <div class="container editor-grid">
+    <div class="editor-main">
+      <nav class="editor-steps" aria-label="Letter sections">
+        <button type="button" class="editor-step is-active" data-step-btn="1"><span>01</span> The words</button>
+        <button type="button" class="editor-step" data-step-btn="2"><span>02</span> The look</button>
+        <button type="button" class="editor-step" data-step-btn="3"><span>03</span> Photos &amp; music</button>
+        <button type="button" class="editor-step" data-step-btn="4"><span>04</span> Share</button>
+      </nav>
+
+      <!-- STEP 1: THE WORDS -->
+      <section class="form-card step-panel is-active" data-step-panel="1">
+        <header class="form-card__head">
+          <p class="step-kicker">Step one</p>
+          <h2>The words</h2>
+          <p>Start with their name and the thing you have been meaning to say.</p>
+        </header>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="{{ form.recipient_name.id_for_label }}">Their name <span class="required">*</span></label>
+            {{ form.recipient_name }}
+            {% for error in form.recipient_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="field">
+            <label for="{{ form.sender_name.id_for_label }}">Your name <span class="required">*</span></label>
+            {{ form.sender_name }}
+            <p class="field-hint">Signed at the end, “With love, …”</p>
+            {% for error in form.sender_name.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="{{ form.title.id_for_label }}">Letter title <span class="required">*</span></label>
+          {{ form.title }}
+          {% for error in form.title.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+          <div class="field-label-row">
+            <label for="{{ form.message.id_for_label }}">Your letter <span class="required">*</span></label>
+            <span class="char-count" data-message-count>0 characters</span>
+          </div>
+          {{ form.message }}
+          <p class="field-hint">Line breaks are kept exactly as you write them. No one else will ever read this unless you share it.</p>
+          {% for error in form.message.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+          <label for="{{ form.closing_note.id_for_label }}">One last line <span class="optional">optional</span></label>
+          {{ form.closing_note }}
+          <p class="field-hint">Shown at the very end, just below your signature.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label">What are you celebrating?</span>
+          <div class="choice-grid choice-grid--occasions">
+            {% for value, label in form.fields.occasion.choices %}
+              <label class="choice-chip">
+                <input type="radio" name="occasion" value="{{ value }}" {% if form.occasion.value == value %}checked{% endif %}>
+                <span>{{ label }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          {% for error in form.occasion.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field field--half">
+          <label for="{{ form.special_date.id_for_label }}">A special date <span class="optional">optional</span></label>
+          {{ form.special_date }}
+          <p class="field-hint">Adds a live countdown to your letter — perfect for anniversaries and birthdays.</p>
+          {% for error in form.special_date.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="step-nav">
+          <span></span>
+          <button type="button" class="btn btn--primary" data-next-step>Next: the look <span aria-hidden="true">→</span></button>
+        </div>
+      </section>
+
+      <!-- STEP 2: THE LOOK -->
+      <section class="form-card step-panel" data-step-panel="2" hidden>
+        <header class="form-card__head">
+          <p class="step-kicker">Step two</p>
+          <h2>The look</h2>
+          <p>Pick the colours, handwriting and atmosphere that feel like the two of you.</p>
+        </header>
+
+        <div class="field">
+          <span class="field-label">Romantic theme</span>
+          <div class="theme-picker" data-theme-picker>
+            {% for theme in themes %}
+            <label class="theme-option" data-theme-option
+                   data-primary="{{ theme.primary_color }}" data-secondary="{{ theme.secondary_color }}"
+                   data-accent="{{ theme.accent_color }}" data-paper="{{ theme.paper_color }}"
+                   data-ink="{{ theme.ink_color }}" data-bg="{{ theme.background_css }}"
+                   data-heading="{{ theme.heading_font }}">
+              <input type="radio" name="theme" value="{{ theme.pk }}"
+                     {% if form.theme.value|stringformat:'s' == theme.pk|stringformat:'s' %}checked{% endif %}>
+              <span class="theme-option__preview" style="background:{{ theme.background_css }};color:{{ theme.ink_color }}">
+                <span class="theme-option__script" style="font-family:{{ theme.heading_font }}">For you</span>
+                <span class="theme-option__line"></span>
+                <span class="theme-option__line theme-option__line--short"></span>
+                <span class="theme-option__heart" style="color:{{ theme.accent_color }}">♥</span>
+              </span>
+              <span class="theme-option__meta">
+                <strong>{{ theme.name }}</strong>
+                <span class="theme-option__swatches">
+                  <i style="background:{{ theme.primary_color }}"></i>
+                  <i style="background:{{ theme.secondary_color }}"></i>
+                  <i style="background:{{ theme.paper_color }}"></i>
+                </span>
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+          {% for error in form.theme.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+          <span class="field-label">Typography</span>
+          <div class="font-picker">
+            {% for value, label in form.fields.font_style.choices %}
+            <label class="font-option font-option--{{ value }}">
+              <input type="radio" name="font_style" value="{{ value }}" {% if form.font_style.value == value %}checked{% endif %}>
+              <span class="font-option__sample">I love you</span>
+              <span class="font-option__name">{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% for error in form.font_style.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+          <span class="field-label">Background atmosphere</span>
+          <div class="backdrop-picker">
+            {% for value, label in form.fields.backdrop.choices %}
+            <label class="backdrop-option backdrop-option--{{ value }}">
+              <input type="radio" name="backdrop" value="{{ value }}" {% if form.backdrop.value == value %}checked{% endif %}>
+              <span class="backdrop-option__swatch"></span>
+              <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% for error in form.backdrop.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field">
+          <span class="field-label">Falling particles</span>
+          <div class="choice-grid">
+            {% for value, label in form.fields.animation.choices %}
+            <label class="choice-chip">
+              <input type="radio" name="animation" value="{{ value }}" {% if form.animation.value == value %}checked{% endif %}>
+              <span>{{ label }}</span>
+            </label>
+            {% endfor %}
+          </div>
+          {% for error in form.animation.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="step-nav">
+          <button type="button" class="btn btn--ghost" data-prev-step>← Back</button>
+          <button type="button" class="btn btn--primary" data-next-step>Next: photos &amp; music <span aria-hidden="true">→</span></button>
+        </div>
+      </section>
+
+      <!-- STEP 3: PHOTOS & MUSIC -->
+      <section class="form-card step-panel" data-step-panel="3" hidden>
+        <header class="form-card__head">
+          <p class="step-kicker">Step three</p>
+          <h2>Photos &amp; music</h2>
+          <p>The details that make it unmistakably yours. All optional, all worth it.</p>
+        </header>
+
+        <div class="field">
+          <div class="field-label-row">
+            <span class="field-label">Your photos</span>
+            <span class="field-hint">{{ photos|length }} of {{ max_photos }} used</span>
+          </div>
+
+          {% if photos %}
+          <div class="photo-grid" data-photo-grid {% if letter %}data-reorder-url="{% url 'letters:photo_reorder' letter.slug %}"{% endif %}>
+            {% for photo in photos %}
+            <figure class="photo-card" draggable="true" data-photo-id="{{ photo.id }}">
+              <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'A shared memory' }}" loading="lazy">
+              <button type="button" class="photo-remove" data-photo-delete="{% url 'letters:photo_delete' letter.slug photo.id %}" aria-label="Remove this photo" title="Remove photo">×</button>
+              <figcaption>{{ photo.caption|default:"A memory" }}</figcaption>
+              <span class="photo-drag" aria-hidden="true">⋮⋮</span>
+            </figure>
+            {% endfor %}
+          </div>
+          <p class="field-hint">Drag photos to reorder them. The first one becomes your envelope's keepsake.</p>
+          {% endif %}
+
+          <label class="dropzone" data-dropzone for="photoInput">
+            <input type="file" name="photos" id="photoInput" accept="image/*" multiple data-photo-input data-max="{{ max_photos }}">
+            <span class="dropzone__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><rect x="3" y="15" width="18" height="6" rx="2"/></svg>
+            </span>
+            <span class="dropzone__title">Drop photos here, or <em>choose from your device</em></span>
+            <span class="dropzone__hint">JPG, PNG, WEBP or GIF · up to 5 MB each · {{ max_photos }} photos per letter</span>
+          </label>
+          <div class="upload-preview" data-upload-preview></div>
+          {% for error in form.photos.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <hr class="form-divider">
+
+        <div class="field">
+          <label for="{{ form.music.id_for_label }}">Music from our library</label>
+          <select name="music" id="{{ form.music.id_for_label }}" class="input input--soft select" data-music-select>
+            <option value="">No music — a quiet letter</option>
+            {% for track in music_library %}
+              <option value="{{ track.pk }}" data-src="{{ track.source }}" data-title="{{ track.title }}"
+                {% if form.music.value|stringformat:'s' == track.pk|stringformat:'s' %}selected{% endif %}>
+                {{ track.title }}{% if track.mood %} · {{ track.mood }}{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+          <div class="music-row">
+            <button type="button" class="btn btn--soft btn--sm" data-music-play>▶ Play a little</button>
+            <button type="button" class="btn btn--ghost btn--sm" data-music-stop hidden>■ Stop</button>
+            <span class="field-hint" data-music-now>Choose a track to hear it.</span>
+          </div>
+          {% for error in form.music.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="{{ form.music_file.id_for_label }}">…or upload your song <span class="optional">optional</span></label>
+            {{ form.music_file }}
+            <p class="field-hint">MP3, OGG, WAV, M4A · up to 15 MB. Uploaded music wins over the library.</p>
+            {% if letter.music_file %}
+              <p class="file-current">Current: <a href="{{ letter.music_file.url }}" target="_blank" rel="noopener">{{ letter.music_file.name }}</a></p>
+            {% endif %}
+            {% if letter.music_file %}<label class="mini-check">{{ form.remove_music }} Remove uploaded music</label>{% endif %}
+            {% for error in form.music_file.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="field">
+            <label for="{{ form.music_url.id_for_label }}">…or link a direct audio URL <span class="optional">optional</span></label>
+            {{ form.music_url }}
+            <p class="field-hint">For example a track you own, hosted somewhere public.</p>
+            {% for error in form.music_url.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+
+        <div class="step-nav">
+          <button type="button" class="btn btn--ghost" data-prev-step>← Back</button>
+          <button type="button" class="btn btn--primary" data-next-step>Next: sharing <span aria-hidden="true">→</span></button>
+        </div>
+      </section>
+
+      <!-- STEP 4: SHARE -->
+      <section class="form-card step-panel" data-step-panel="4" hidden>
+        <header class="form-card__head">
+          <p class="step-kicker">Step four</p>
+          <h2>Share, if you dare</h2>
+          <p>Keep it private, lock it with a word, or let others read it in the gallery.</p>
+        </header>
+
+        <div class="privacy-card">
+          <span class="privacy-card__icon" aria-hidden="true">🔒</span>
+          <div>
+            <h3>Password protect this letter</h3>
+            <p>Your link will open a sealed screen that asks for a secret word. Only give it to them.</p>
+            {% if letter.has_password %}<p class="field-hint">This letter already has a password. Leave these blank to keep it.</p>{% endif %}
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="{{ form.password.id_for_label }}">Letter password <span class="optional">optional</span></label>
+            {{ form.password }}
+            {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+          <div class="field">
+            <label for="{{ form.password_confirm.id_for_label }}">Confirm password</label>
+            {{ form.password_confirm }}
+            {% for error in form.password_confirm.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+          </div>
+        </div>
+        {% if letter.has_password %}
+          <label class="mini-check">{{ form.clear_password }} Remove the existing password</label>
+        {% endif %}
+
+        <hr class="form-divider">
+
+        <label class="switch-row">
+          <span>
+            <strong>Show it in the public gallery</strong>
+            <span class="field-hint">Published letters only. Your photos and words become visible to anyone visiting “Letters of love”.</span>
+          </span>
+          {{ form.is_public }}
+        </label>
+
+        {% if letter and letter.status == 'published' %}
+        <div class="share-panel">
+          <h3>Your letter is live</h3>
+          <p>Anyone with this link can open it{% if letter.has_password %} (and will need the password){% endif %}.</p>
+          <div class="copy-field">
+            <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}{{ letter.get_absolute_url }}" data-share-input aria-label="Share link">
+            <button type="button" class="btn btn--primary btn--sm" data-copy-target="[data-share-input]">Copy</button>
+          </div>
+          <div class="share-panel__actions">
+            <a href="{% url 'letters:letter' letter.slug %}" target="_blank" rel="noopener" class="btn btn--soft btn--sm">Open live letter ↗</a>
+            <button type="button" class="btn btn--ghost btn--sm" data-qr="{{ letter.slug }}" data-qr-url="{% url 'letters:qr' letter.slug %}" data-qr-title="{{ letter.title }}">Show QR code</button>
+          </div>
+          <p class="share-panel__views">{{ letter.view_count|intcomma }} open{{ letter.view_count|pluralize }} so far</p>
+        </div>
+        {% endif %}
+
+        <div class="publish-note">
+          <span aria-hidden="true">♥</span>
+          <p>You can keep editing after publishing. The link stays the same — your words just get better.</p>
+        </div>
+
+        <div class="step-nav">
+          <button type="button" class="btn btn--ghost" data-prev-step>← Back</button>
+          <div class="step-nav__right">
+            <button type="submit" name="action" value="preview" class="btn btn--soft">Preview letter</button>
+            {% if letter and letter.status == 'published' %}
+              <button type="submit" name="action" value="publish" class="btn btn--primary">Update live letter</button>
+            {% else %}
+              <button type="submit" name="action" value="publish" class="btn btn--primary">Publish love letter</button>
+            {% endif %}
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- LIVE PREVIEW ASIDE -->
+    <aside class="editor-side">
+      <div class="editor-side__sticky">
+        <div class="side-head">
+          <h2>Live preview</h2>
+          <span class="side-head__dot" aria-hidden="true"></span>
+        </div>
+
+        <div class="mini-letter" data-mini-letter style="--m-primary:#e46b8f;--m-secondary:#c69a5b;--m-accent:#d94f79;--m-paper:#fff8f3;--m-ink:#4b2b3a;">
+          <div class="mini-letter__envelope">
+            <span class="mle-back"></span>
+            <span class="mle-seal">♥</span>
+            <span class="mle-flap"></span>
+          </div>
+          <div class="mini-letter__paper">
+            <p class="mini-letter__for" data-mini-for>For the one you love</p>
+            <h3 class="mini-letter__title" data-mini-title>Your letter title</h3>
+            <p class="mini-letter__body" data-mini-message>Your words will appear here as you write them — soft, warm, and completely yours.</p>
+            <p class="mini-letter__sign">with love,<br><span data-mini-sender>You</span></p>
+            <span class="mini-letter__date" data-mini-date>{% now "F j, Y" %}</span>
+          </div>
+          <div class="mini-letter__footer">
+            <span class="mini-eq"><i></i><i></i><i></i><i></i></span>
+            <span data-mini-music>no music yet</span>
+          </div>
+        </div>
+
+        <div class="preview-meta">
+          <div class="preview-meta__row"><span>Typography</span><strong data-mini-font>{{ form.font_style.value|default:'Handwritten'|capfirst }}</strong></div>
+          <div class="preview-meta__row"><span>Photos</span><strong data-mini-photo-count>{{ photos|length }}</strong></div>
+          <div class="preview-meta__row"><span>Particles</span><strong data-mini-animation>{{ form.animation.value|default:'hearts'|capfirst }}</strong></div>
+        </div>
+
+        {% if letter %}
+        <a href="{% url 'letters:preview' letter.slug %}" target="_blank" rel="noopener" class="btn btn--ghost btn--block btn--sm">Open full preview ↗</a>
+        {% else %}
+        <p class="side-note">Save your letter to open a full, clickable preview.</p>
+        {% endif %}
+
+        <div class="side-tip">
+          <span aria-hidden="true">✦</span>
+          <p><strong>A small tip:</strong> the most memorable letters mention one tiny, specific thing — a rainy walk, a burnt pancake, the way they hum when they think no one is listening.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="editor-actionbar">
+    <div class="container editor-actionbar__inner">
+      <a href="{% url 'letters:dashboard' %}" class="text-link text-link--muted">Save for later</a>
+      <div class="editor-actionbar__actions">
+        <button type="submit" name="action" value="draft" class="btn btn--soft">Save draft</button>
+        <button type="submit" name="action" value="preview" class="btn btn--ghost">Preview</button>
+        {% if letter and letter.status == 'published' %}
+          <button type="submit" name="action" value="publish" class="btn btn--primary">Update live letter</button>
+        {% else %}
+          <button type="submit" name="action" value="publish" class="btn btn--primary">Publish <span aria-hidden="true">→</span></button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</form>
+
+<dialog class="modal" id="qrModal" aria-labelledby="qrTitle">
+  <div class="modal__inner">
+    <button type="button" class="modal__close" data-modal-close aria-label="Close">×</button>
+    <p class="eyebrow eyebrow--center">Scan to open</p>
+    <h2 id="qrTitle">Share your letter</h2>
+    <div class="qr-frame"><img id="qrImage" src="" alt="QR code for this love letter" width="240" height="240"></div>
+    <p class="qr-hint">A little square that opens a whole lot of love.</p>
+    <div class="qr-actions">
+      <a id="qrDownload" href="#" class="btn btn--soft btn--sm" download>Download PNG</a>
+      <button type="button" class="btn btn--ghost btn--sm" data-modal-close>Close</button>
+    </div>
+  </div>
+</dialog>
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="{% static 'js/editor.js' %}"></script>
+{% endblock %}

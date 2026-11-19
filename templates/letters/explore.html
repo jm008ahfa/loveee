@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static humanize %}
+{% block title %}Letters of love — To My Love{% endblock %}
+{% block description %}Read real love letters shared by people who wanted their feelings to be more than a text message.{% endblock %}
+
+{% block content %}
+<section class="explore-head">
+  <div class="container">
+    <p class="eyebrow eyebrow--center reveal">Shared with permission</p>
+    <h1 class="explore-title reveal">Letters of love</h1>
+    <p class="explore-sub reveal">Real words, real people, real feelings. Maybe one of them sounds like yours.</p>
+    <form method="get" class="explore-search reveal" role="search">
+      <span class="search-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </span>
+      <input type="search" name="q" value="{{ query }}" placeholder="Search a name or title…" aria-label="Search public letters" class="input input--soft input--search">
+      <button type="submit" class="btn btn--primary btn--sm">Search</button>
+    </form>
+    {% if query %}
+      <p class="explore-result">Results for “{{ query }}” · <a href="{% url 'letters:explore' %}">clear</a></p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--explore">
+  <div class="container">
+    {% if page.object_list %}
+      <div class="explore-grid">
+        {% for letter in page.object_list %}
+        <a class="explore-card reveal" href="{% url 'letters:letter' letter.slug %}" target="_blank" rel="noopener"
+           style="--t-primary:{{ letter.theme.primary_color|default:'#e46b8f' }};--t-secondary:{{ letter.theme.secondary_color|default:'#9b6bd6' }};--t-accent:{{ letter.theme.accent_color|default:'#d94f79' }};">
+          <div class="explore-card__media {% if not letter.first_photo %}explore-card__media--empty{% endif %}">
+            {% if letter.first_photo %}
+              <img src="{{ letter.first_photo.image.url }}" alt="A photo from {{ letter.title }}" loading="lazy">
+            {% else %}
+              <span class="explore-card__initial">{{ letter.recipient_name|first|upper }}</span>
+              <span class="explore-card__heart">♥</span>
+            {% endif %}
+            <span class="explore-card__occasion">{{ letter.occasion_emoji }} {{ letter.get_occasion_display }}</span>
+            {% if letter.has_password %}<span class="explore-card__lock" title="Password protected">🔒</span>{% endif %}
+          </div>
+          <div class="explore-card__body">
+            <p class="explore-card__for">For {{ letter.recipient_name }}</p>
+            <h2>{{ letter.title }}</h2>
+            <p class="explore-card__excerpt">{{ letter.message|truncatechars:120 }}</p>
+            <div class="explore-card__meta">
+              <span>by {{ letter.sender_name }}</span>
+              <span class="dot-sep">·</span>
+              <span>{{ letter.view_count|intcomma }} read{{ letter.view_count|pluralize }}</span>
+              {% if letter.photos.count %}<span class="dot-sep">·</span><span>{{ letter.photos.count }} photo{{ letter.photos.count|pluralize }}</span>{% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+      {% if page.paginator.num_pages > 1 %}
+      <nav class="pagination" aria-label="Letters pages">
+        {% if page.has_previous %}<a class="page-link" href="?page={{ page.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">← Newer</a>{% endif %}
+        <span class="page-current">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+        {% if page.has_next %}<a class="page-link" href="?page={{ page.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Older →</a>{% endif %}
+      </nav>
+      {% endif %}
+    {% else %}
+      <div class="empty-state empty-state--page">
+        <div class="empty-envelope" aria-hidden="true">
+          <span class="ee-body"></span>
+          <span class="ee-letter">♥</span>
+          <span class="ee-flap"></span>
+        </div>
+        <h2>{% if query %}No letters found{% else %}The gallery is waiting for its first letter{% endif %}</h2>
+        <p>{% if query %}Try a different name, or browse everything.{% else %}Be the first to share a little piece of your heart in public.{% endif %}</p>
+        <a href="{% if query %}{% url 'letters:explore' %}{% else %}{% url 'letters:signup' %}{% endif %}" class="btn btn--primary">
+          {% if query %}See all letters{% else %}Write the first one{% endif %}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--cta">
+  <div class="container">
+    <div class="cta-panel cta-panel--small reveal">
+      <span class="cta-heart" aria-hidden="true">♥</span>
+      <h2>Yours could be next.</h2>
+      <p>Turn what you feel into something they can open, read and keep.</p>
+      <a href="{% if user.is_authenticated %}{% url 'letters:editor_create' %}{% else %}{% url 'letters:signup' %}{% endif %}" class="btn btn--primary">Create your love letter</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

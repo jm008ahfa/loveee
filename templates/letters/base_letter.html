@@ -1,0 +1,61 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}A letter for you{% endblock %}</title>
+  <meta name="description" content="{{ meta_description|default:'A love letter, made just for you.' }}">
+  <meta name="robots" content="{% if preview %}noindex,nofollow{% else %}noindex,follow{% endif %}">
+  <meta name="theme-color" content="{{ theme.primary }}">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}You have received a special letter{% endblock %}">
+  <meta property="og:description" content="{{ meta_description|default:'Open it whenever you are ready.' }}">
+  {% if og_image %}<meta property="og:image" content="{{ og_image }}">{% endif %}
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23e46b8f' d='M16 27S4 19.6 4 11.8C4 7.5 7.1 4.7 10.7 4.7c2.3 0 4.3 1.2 5.3 3 1-1.8 3-3 5.3-3C24.9 4.7 28 7.5 28 11.8 28 19.6 16 27 16 27z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Great+Vibes&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/letter.css' %}">
+</head>
+<body class="letter-body backdrop--{{ letter.backdrop }} font--{{ letter.font_style }} {% block body_class %}{% endblock %}"
+      style="--primary:{{ theme.primary }};--secondary:{{ theme.secondary }};--accent:{{ theme.accent }};--paper:{{ theme.paper }};--ink:{{ theme.ink }};--soft:{{ theme.soft }};--soft-2:{{ theme.soft_secondary }};--letter-font:{{ theme.letter_font }};--theme-bg:{{ theme.background }};--heading-font:{{ theme.heading_font }};"
+      data-animation="{{ letter.animation }}">
+
+  <div class="scene-bg" aria-hidden="true">
+    <div class="scene-bg__gradient"></div>
+    <div class="scene-bg__glow scene-bg__glow--a"></div>
+    <div class="scene-bg__glow scene-bg__glow--b"></div>
+    <div class="scene-bg__grain"></div>
+  </div>
+  <div class="particles" id="particles" aria-hidden="true"></div>
+
+  {% block content %}{% endblock %}
+
+  {% block music %}
+    {% if has_music %}
+      <div class="music-dock" data-music-dock>
+        <audio id="letterAudio" src="{{ music_source }}" loop preload="none"></audio>
+        <button class="music-button" id="musicToggle" type="button" aria-label="Play background music" aria-pressed="false" title="Our song">
+          <span class="music-button__ring" aria-hidden="true">
+            <svg viewBox="0 0 44 44" width="44" height="44"><circle cx="22" cy="22" r="20" class="ring-track"/><circle cx="22" cy="22" r="20" class="ring-progress" id="musicProgress"/></svg>
+          </span>
+          <span class="music-button__icon music-icon--play" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>
+          </span>
+          <span class="music-button__icon music-icon--pause" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><rect x="7" y="5" width="3.4" height="14" rx="1"/><rect x="13.6" y="5" width="3.4" height="14" rx="1"/></svg>
+          </span>
+          <span class="music-button__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+        </button>
+        <span class="music-label">Our song</span>
+      </div>
+    {% endif %}
+  {% endblock %}
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+  <script src="{% static 'js/letter.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

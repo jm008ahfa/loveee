@@ -1,0 +1,200 @@
+{% extends "letters/base_letter.html" %}
+{% load static %}
+
+{% block title %}{% if preview %}Preview — {% endif %}A letter for {{ letter.recipient_name }}{% endblock %}
+{% block og_title %}A letter for {{ letter.recipient_name }}{% endblock %}
+{% block body_class %}{% if preview %}is-preview{% endif %}{% endblock %}
+
+{% block content %}
+{% if preview %}
+  <div class="preview-banner" role="status">
+    <span class="preview-banner__dot" aria-hidden="true"></span>
+    <span><strong>Preview mode.</strong> Only you can see this — your letter is still a {% if letter.status == 'published' %}live{% else %}draft{% endif %}.</span>
+    <a href="{% url 'letters:editor_update' letter.slug %}">Back to editing</a>
+  </div>
+{% endif %}
+
+<noscript>
+  <style>
+    .opening { display: none !important; }
+    .letter-scene { display: block !important; }
+    .skip-typing { display: none !important; }
+  </style>
+</noscript>
+
+<!-- ====================== OPENING SCENE ====================== -->
+<section class="opening" id="openingScene" aria-labelledby="openingTitle">
+  <div class="opening-inner">
+    <p class="opening-eyebrow">
+      <span class="line-deco" aria-hidden="true"></span>
+      A letter for <strong>{{ letter.recipient_name }}</strong>
+      <span class="line-deco" aria-hidden="true"></span>
+    </p>
+
+    <div class="envelope-stage">
+      <span class="floating-word fw-1" aria-hidden="true">always</span>
+      <span class="floating-word fw-2" aria-hidden="true">you &amp; me</span>
+      <span class="floating-word fw-3" aria-hidden="true">♥</span>
+      <span class="floating-word fw-4" aria-hidden="true">forever</span>
+
+      <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open your letter">
+        <div class="env-shadow"></div>
+        <div class="env-back"></div>
+        <div class="env-letter">
+          <span class="env-letter__script">for you</span>
+          <span class="env-letter__line"></span>
+          <span class="env-letter__line env-letter__line--short"></span>
+          <span class="env-letter__heart">♥</span>
+        </div>
+        <div class="env-front">
+          <span class="env-front__fold env-front__fold--left"></span>
+          <span class="env-front__fold env-front__fold--right"></span>
+          <span class="env-front__fold env-front__fold--bottom"></span>
+        </div>
+        <div class="env-flap"></div>
+        <div class="env-seal" aria-hidden="true">
+          <svg viewBox="0 0 60 60" width="60" height="60"><circle cx="30" cy="30" r="27" fill="currentColor" opacity=".18"/><path d="M30 44S17 36 17 27.4c0-4.5 3.2-7.4 7-7.4 2.4 0 4.5 1.3 6 3.4 1.5-2.1 3.6-3.4 6-3.4 3.8 0 7 2.9 7 7.4C43 36 30 44 30 44z" fill="currentColor"/></svg>
+        </div>
+        <div class="env-sparkles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <p class="envelope-hint" id="envelopeHint">tap the envelope</p>
+    </div>
+
+    <h1 class="opening-title" id="openingTitle">You have received<br><em>a special letter.</em></h1>
+    <p class="opening-sub">Sealed with love by {{ letter.sender_name }}, just for you.</p>
+
+    <button class="btn-open" id="openLetter" type="button">
+      <span class="btn-open__label">Open Your Letter</span>
+      <span class="btn-open__heart" aria-hidden="true">♥</span>
+    </button>
+
+    <p class="opening-note">
+      <span aria-hidden="true">♪</span>
+      {% if has_music %}Best with sound on{% else %}Take your time{% endif %}
+      <span class="opening-note__dot">·</span>
+      it is all yours
+    </p>
+  </div>
+
+  <div class="opening-bottom" aria-hidden="true">
+    <span>made with love</span>
+    <span class="scroll-line"></span>
+  </div>
+</section>
+
+<!-- ====================== LETTER SCENE ====================== -->
+<section class="letter-scene" id="letterScene" hidden>
+  <div class="letter-wrap">
+
+    <header class="letter-hero">
+      <p class="letter-occasion">{{ letter.occasion_emoji }} {{ letter.get_occasion_display }}</p>
+      <p class="letter-for">For <span>{{ letter.recipient_name }}</span></p>
+      <h1 class="letter-title" data-typewriter>{{ letter.title }}</h1>
+      {% if letter.published_at %}
+        <p class="letter-date">{{ letter.published_at|date:"F j, Y" }}</p>
+      {% endif %}
+      <span class="letter-hero__rule" aria-hidden="true"></span>
+    </header>
+
+    {% if letter.special_date %}
+    <section class="countdown-card" data-countdown="{{ letter.special_date|date:'Y-m-d' }}" data-occasion="{{ letter.get_occasion_display }}" aria-label="Countdown to a special date">
+      <p class="countdown-card__label" data-countdown-label>Counting down to {{ letter.get_occasion_display|lower }}</p>
+      <div class="countdown-grid">
+        <div class="countdown-unit"><span data-cd-days>00</span><small>days</small></div>
+        <div class="countdown-unit"><span data-cd-hours>00</span><small>hours</small></div>
+        <div class="countdown-unit"><span data-cd-mins>00</span><small>minutes</small></div>
+        <div class="countdown-unit"><span data-cd-secs>00</span><small>seconds</small></div>
+      </div>
+      <p class="countdown-card__date">{{ letter.special_date|date:"F j, Y" }}</p>
+    </section>
+    {% endif %}
+
+    <article class="letter-paper">
+      <span class="paper-flourish paper-flourish--tl" aria-hidden="true"></span>
+      <span class="paper-flourish paper-flourish--br" aria-hidden="true"></span>
+      <div class="letter-paper__head">
+        <span class="paper-small">{{ letter.recipient_name }}</span>
+        <div class="paper-stamp" aria-hidden="true">
+          <span class="paper-stamp__ring"></span>
+          <span class="paper-stamp__heart">♥</span>
+          <span class="paper-stamp__text">WITH LOVE</span>
+        </div>
+      </div>
+
+      <div class="letter-message" data-letter-message>
+        {{ letter.message|linebreaks }}
+      </div>
+
+      <div class="letter-signature">
+        <span class="sign-rule" aria-hidden="true"></span>
+        <p class="sign-with">With love,</p>
+        <p class="sign-name">{{ letter.sender_name }}</p>
+      </div>
+
+      <button class="skip-typing" type="button" id="skipTyping" hidden>Reveal all the words</button>
+    </article>
+
+    {% if photos %}
+    <section class="gallery-section" aria-labelledby="galleryTitle">
+      <header class="gallery-head">
+        <p class="gallery-eyebrow">A few moments we keep</p>
+        <h2 id="galleryTitle">Us, in pictures</h2>
+        <p class="gallery-sub">Tap a photo to hold it a little closer.</p>
+      </header>
+      <div class="polaroid-grid">
+        {% for photo in photos %}
+        <button type="button" class="polaroid polaroid--{{ forloop.counter|divisibleby:2|yesno:'even,odd' }}"
+                data-lightbox-index="{{ forloop.counter0 }}"
+                data-src="{{ photo.image.url }}"
+                data-caption="{{ photo.caption }}"
+                aria-label="Open photo {% if photo.caption %}{{ photo.caption }}{% else %}{{ forloop.counter }}{% endif %}">
+          <span class="polaroid__tape" aria-hidden="true"></span>
+          <span class="polaroid__image"><img src="{{ photo.image.url }}" alt="{{ photo.caption|default:'A memory together' }}" loading="lazy"></span>
+          {% if photo.caption %}<span class="polaroid__caption">{{ photo.caption }}</span>{% endif %}
+        </button>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="closing-section" aria-labelledby="closingTitle">
+      <div class="closing-halo" aria-hidden="true"></div>
+      <p class="closing-eyebrow" id="closingTitle">And one more thing</p>
+      <p class="closing-note">{{ letter.closing_note }}</p>
+      <div class="beating-heart" aria-hidden="true">
+        <span class="beating-heart__glow"></span>
+        <span class="beating-heart__main">♥</span>
+        <span class="beating-heart__spark s1">✦</span>
+        <span class="beating-heart__spark s2">✧</span>
+        <span class="beating-heart__spark s3">✦</span>
+      </div>
+      <p class="closing-always">Always,</p>
+      <p class="closing-name">{{ letter.sender_name }}</p>
+    </section>
+
+    <footer class="letter-footer">
+      <p class="letter-footer__made">
+        {% if has_music %}<button type="button" class="inline-music" data-music-inline><span class="mini-eq"><i></i><i></i><i></i><i></i></span> our song</button><span class="dot-sep">·</span>{% endif %}
+        {{ letter.published_at|date:"F j, Y"|default:"" }}
+      </p>
+      <p class="letter-footer__cta">
+        Someone sent you this with their whole heart.
+        <a href="{% url 'letters:home' %}">Make one for your person →</a>
+      </p>
+    </footer>
+  </div>
+</section>
+
+<dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+  <div class="lightbox__inner">
+    <button type="button" class="lightbox__close" data-lightbox-close aria-label="Close">×</button>
+    <button type="button" class="lightbox__nav lightbox__nav--prev" data-lightbox-prev aria-label="Previous photo">‹</button>
+    <figure class="lightbox__figure">
+      <img id="lightboxImage" src="" alt="">
+      <figcaption id="lightboxCaption"></figcaption>
+    </figure>
+    <button type="button" class="lightbox__nav lightbox__nav--next" data-lightbox-next aria-label="Next photo">›</button>
+    <span class="lightbox__count" id="lightboxCount"></span>
+  </div>
+</dialog>
+{% endblock %}

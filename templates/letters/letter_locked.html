@@ -1,0 +1,43 @@
+{% extends "letters/base_letter.html" %}
+{% load static %}
+
+{% block title %}A sealed letter for {{ letter.recipient_name }}{% endblock %}
+{% block body_class %}is-locked{% endblock %}
+
+{% block content %}
+<section class="locked-scene">
+  <div class="locked-card">
+    <div class="locked-envelope" aria-hidden="true">
+      <span class="le-body"></span>
+      <span class="le-letter">♥</span>
+      <span class="le-flap"></span>
+      <span class="le-seal">♥</span>
+      <span class="le-lock">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </span>
+    </div>
+
+    <p class="locked-eyebrow">A letter for <strong>{{ letter.recipient_name }}</strong></p>
+    <h1>This one is <em>sealed.</em></h1>
+    <p class="locked-sub">Whoever sent it left a secret word for you. Enter it below and the envelope will open.</p>
+
+    <form method="post" class="locked-form" novalidate>
+      {% csrf_token %}
+      <div class="field">
+        <label for="{{ form.password.id_for_label }}" class="sr-only">Secret password</label>
+        {{ form.password }}
+        {% for error in form.password.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+      </div>
+      <button type="submit" class="btn-open btn-open--small">
+        <span>Open the letter</span><span class="btn-open__heart" aria-hidden="true">♥</span>
+      </button>
+    </form>
+
+    <p class="locked-hint">No password? Ask the person who sent it — it is worth the wait.</p>
+  </div>
+
+  <footer class="locked-footer">
+    <a href="{% url 'letters:home' %}">Made with love on {{ SITE_NAME }}</a>
+  </footer>
+</section>
+{% endblock %}
