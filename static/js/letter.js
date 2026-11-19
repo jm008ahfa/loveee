@@ -151,10 +151,22 @@
     }
   }
 
+  function preloadGalleryImages() {
+    document.querySelectorAll(".polaroid__image img").forEach(function (img) {
+      if (img.complete) return;
+      // Some browsers skip lazy images inside a scene that was initially hidden.
+      // Force the request as soon as the letter opens so the gallery is never blank.
+      img.loading = "eager";
+      var src = img.getAttribute("src");
+      if (src) img.src = src;
+    });
+  }
+
   function revealScene() {
     if (openingScene) openingScene.hidden = true;
     if (letterScene) letterScene.hidden = false;
     window.scrollTo(0, 0);
+    preloadGalleryImages();
 
     var messageWrap = document.querySelector("[data-letter-message]");
     if (messageWrap && !reduceMotion) {
@@ -174,8 +186,10 @@
       if (countdown) gsap.from(countdown, { y: 26, opacity: 0, duration: 0.8, delay: 0.25, ease: "power3.out" });
       if (paper) gsap.from(paper, { y: 60, opacity: 0, duration: 1.1, delay: 0.18, ease: "power3.out" });
       if (gallery && window.ScrollTrigger) {
+        // Animate position only. Photos must never depend on a scroll trigger
+        // firing to become visible.
         gsap.from(gallery.querySelectorAll(".polaroid"), {
-          y: 50, opacity: 0, duration: 0.8, stagger: 0.1, ease: "power3.out",
+          y: 34, duration: 0.8, stagger: 0.1, ease: "power3.out",
           scrollTrigger: { trigger: gallery, start: "top 82%" }
         });
       }
